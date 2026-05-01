@@ -1,0 +1,12 @@
+# Ignore secrets and generated TLS
+secrets/
+srcs/requirements/nginx/tools/ssl/
+
+# Node / Python / OS
+*.pyc
+__pycache__/
+*.log
+
+# Docker
+**/node_modules
+**/.env
