@@ -10,4 +10,4 @@ if [ -z "$(ls -A /var/www/html 2>/dev/null)" ]; then
 fi
 
 echo "[entrypoint] Starting php-fpm in foreground"
-exec php-fpm -F
+exec php-fpm8.2 -F

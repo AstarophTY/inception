@@ -3,7 +3,7 @@ FROM debian:12-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-	&& apt-get install -y --no-install-recommends ca-certificates wget unzip php-fpm php-mysql php-xml php-mbstring php-curl php-gd php-zip \
+	&& apt-get install -y --no-install-recommends ca-certificates wget unzip php8.2-fpm php-mysql php-xml php-mbstring php-curl php-gd php-zip \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN useradd -r -u 1000 www && mkdir -p /var/www/html && chown -R www:www /var/www/html
