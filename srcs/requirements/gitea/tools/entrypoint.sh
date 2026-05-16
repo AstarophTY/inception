@@ -30,7 +30,7 @@ set_ini_value() {
 		BEGIN { in_section=0; done=0 }
 		$0 ~ "^\\[" section "\\]" { in_section=1; print; next }
 		in_section && $0 ~ "^\\[" { if (!done) { print key " = " value; done=1 } in_section=0 }
-		in_section && $0 ~ "^" key "[[:space:]]*=" { print key " = " value; done=1; next }
+		in_section && $0 ~ "^[[:space:]]*" key "[[:space:]]*=" { print key " = " value; done=1; next }
 		{ print }
 		END {
 			if (!done) {
@@ -78,6 +78,8 @@ fi
 if [ -n "${DB_PASSWD}" ]; then
 	set_ini_value "database" "PASSWD" "${DB_PASSWD}"
 fi
+
+set_ini_value "security" "INSTALL_LOCK" "true"
 
 if [ -z "${DB_PATH}" ] && [ "${DB_TYPE}" = "sqlite3" ]; then
 	DB_PATH="/data/gitea/gitea.db"
