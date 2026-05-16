@@ -7,7 +7,7 @@ RUN apt-get update \
 		php8.2-cli php8.2-mysqli wget ca-certificates \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN wget -q "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php" \
+RUN wget -q "https://www.adminer.org/latest.php" \
 		-O /var/www/adminer.php
 
 WORKDIR /var/www
