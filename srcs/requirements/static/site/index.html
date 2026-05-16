@@ -1,55 +1,207 @@
 
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-mono); }
-.wrap { max-width: 560px; padding: 2.5rem 1.5rem; }
-h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 0.4rem; }
-.sub { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 2rem; }
-h2 { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
-.links { display: flex; flex-direction: column; gap: 6px; margin-bottom: 2rem; }
-.link-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); }
-.link-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
-.link-url { font-size: 12px; color: var(--color-text-secondary); }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2rem; }
-.pill { font-size: 12px; padding: 4px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; color: var(--color-text-secondary); background: var(--color-background-secondary); }
-.footer { font-size: 12px; color: var(--color-text-tertiary); }
+  @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #ffffff;
+    --fg: #09090b;
+    --muted: #f4f4f5;
+    --muted-fg: #71717a;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+    --card: #ffffff;
+    --card-fg: #09090b;
+    --radius: 0.5rem;
+    --font-sans: 'Geist', sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #09090b;
+      --fg: #fafafa;
+      --muted: #27272a;
+      --muted-fg: #a1a1aa;
+      --border: #27272a;
+      --card: #09090b;
+      --card-fg: #fafafa;
+      --ring: #d4d4d8;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .page {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--fg);
+    padding: 2rem 1.5rem 3rem;
+    max-width: 580px;
+    min-height: 100vh;
+  }
+
+  .header { margin-bottom: 2rem; }
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin-bottom: 0.25rem;
+  }
+  .header p {
+    font-size: 0.875rem;
+    color: var(--muted-fg);
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+    margin-bottom: 0.75rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    transition: background 0.1s;
+    cursor: default;
+  }
+  .card-row:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+  .card-row:hover { background: var(--muted); }
+
+  .row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted-fg);
+    flex-shrink: 0;
+  }
+  .dot.online { background: #22c55e; }
+
+  .row-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--fg);
+  }
+  .row-url {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted-fg);
+    padding: 2px 8px;
+    background: var(--muted);
+    border-radius: calc(var(--radius) - 2px);
+    border: 1px solid var(--border);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-bottom: 1.5rem;
+  }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: calc(var(--radius) - 2px);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    background: transparent;
+    letter-spacing: 0.01em;
+  }
+
+  .footer {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted-fg);
+    padding-top: 0.5rem;
+  }
 </style>
 
-<div class="wrap">
-  <h1>Inception</h1>
-  <p class="sub">Infrastructure Docker — 42 Lyon, 2026</p>
+<div class="page">
 
-  <h2>Services</h2>
-  <div class="links">
-    <div class="link-item">
-      <span class="link-name">WordPress</span>
-      <span class="link-url">sgil--de.42.fr</span>
+  <div class="header">
+    <h1>Inception</h1>
+    <p>Infrastructure Docker — 42 Lyon</p>
+  </div>
+
+  <div class="separator"></div>
+
+  <p class="section-label">Services</p>
+  <div class="card">
+    <div class="card-row">
+      <div class="row-left">
+        <span class="dot online"></span>
+        <span class="row-name">WordPress</span>
+      </div>
+      <span class="row-url">sgil--de.42.fr</span>
     </div>
-    <div class="link-item">
-      <span class="link-name">Site statique</span>
-      <span class="link-url">sgil--de.42.fr/static/</span>
+    <div class="card-row">
+      <div class="row-left">
+        <span class="dot online"></span>
+        <span class="row-name">Site statique</span>
+      </div>
+      <span class="row-url">sgil--de.42.fr/static/</span>
     </div>
-    <div class="link-item">
-      <span class="link-name">Adminer</span>
-      <span class="link-url">sgil--de.42.fr/adminer/</span>
+    <div class="card-row">
+      <div class="row-left">
+        <span class="dot online"></span>
+        <span class="row-name">Adminer</span>
+      </div>
+      <span class="row-url">sgil--de.42.fr/adminer/</span>
     </div>
-    <div class="link-item">
-      <span class="link-name">Gitea</span>
-      <span class="link-url">sgil--de.42.fr/gitea/</span>
+    <div class="card-row">
+      <div class="row-left">
+        <span class="dot online"></span>
+        <span class="row-name">Gitea</span>
+      </div>
+      <span class="row-url">sgil--de.42.fr/gitea/</span>
     </div>
   </div>
 
-  <h2>Stack</h2>
-  <div class="pills">
-    <span class="pill">NGINX</span>
-    <span class="pill">WordPress</span>
-    <span class="pill">MariaDB</span>
-    <span class="pill">Redis</span>
-    <span class="pill">FTP</span>
-    <span class="pill">Gitea</span>
-    <span class="pill">Adminer</span>
-    <span class="pill">Docker</span>
+  <p class="section-label">Stack</p>
+  <div class="badges">
+    <span class="badge">NGINX</span>
+    <span class="badge">WordPress</span>
+    <span class="badge">PHP-FPM</span>
+    <span class="badge">MariaDB</span>
+    <span class="badge">Redis</span>
+    <span class="badge">vsftpd</span>
+    <span class="badge">Gitea</span>
+    <span class="badge">Adminer</span>
+    <span class="badge">Docker</span>
+    <span class="badge">Debian</span>
   </div>
+
+  <div class="separator"></div>
 
   <p class="footer">42 Lyon — 2026</p>
+
 </div>
