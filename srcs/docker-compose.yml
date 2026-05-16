@@ -16,7 +16,7 @@ services:
     networks:
       - inception
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$(cat /run/secrets/db_root_password)\" mysqladmin ping -h localhost -u root --silent"]
       interval: 10s
       timeout: 5s
       retries: 5
