@@ -22,8 +22,11 @@ ENV HOME=/data/git
 ENV GITEA_WORK_DIR=/data
 ENV GITEA_CUSTOM=/data/gitea
 
+COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 EXPOSE 3000
 
 USER git
 
-CMD ["gitea", "web", "--config", "/data/gitea/conf/app.ini"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
