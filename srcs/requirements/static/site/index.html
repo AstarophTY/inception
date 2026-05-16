@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inception — Site statique</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav">
+      <div class="brand">Inception</div>
+      <div class="nav-links">
+        <a href="#features">Bonus</a>
+        <a href="#stack">Stack</a>
+        <a href="#access">Accès</a>
+      </div>
+    </nav>
+    <div class="hero-content">
+      <h1>Site statique /static</h1>
+      <p class="subtitle">Une vitrine minimaliste pour présenter l’architecture et les bonus du projet.</p>
+      <div class="cta">
+        <a class="btn" href="#access">Comment accéder</a>
+        <a class="btn secondary" href="#stack">Voir la stack</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="features" class="section">
+      <h2>Bonus livrés</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Redis cache</h3>
+          <p>Object cache WordPress pour réduire la charge MariaDB.</p>
+        </article>
+        <article class="card">
+          <h3>FTP sécurisé</h3>
+          <p>Accès au volume WordPress pour déployer médias et thèmes.</p>
+        </article>
+        <article class="card">
+          <h3>Adminer</h3>
+          <p>Interface simple pour inspecter la base MariaDB.</p>
+        </article>
+        <article class="card">
+          <h3>Gitea</h3>
+          <p>Forge Git auto‑hébergée, pratique pour la démo.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="stack" class="section alt">
+      <h2>Stack technique</h2>
+      <div class="stack">
+        <div class="pill">nginx + TLS 1.2/1.3</div>
+        <div class="pill">WordPress + PHP‑FPM</div>
+        <div class="pill">MariaDB</div>
+        <div class="pill">Redis cache</div>
+        <div class="pill">FTP (vsftpd)</div>
+        <div class="pill">Gitea</div>
+      </div>
+    </section>
+
+    <section id="access" class="section">
+      <h2>Accès rapide</h2>
+      <div class="access">
+        <div>
+          <h4>Site WordPress</h4>
+          <p><code>https://sgil--de.42.fr</code></p>
+        </div>
+        <div>
+          <h4>Site statique</h4>
+          <p><code>https://sgil--de.42.fr/static/</code></p>
+        </div>
+        <div>
+          <h4>Adminer</h4>
+          <p><code>https://sgil--de.42.fr/adminer/</code></p>
+        </div>
+        <div>
+          <h4>Gitea</h4>
+          <p><code>https://sgil--de.42.fr/gitea/</code></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Inception • Bonus • 42 Lyon</p>
+  </footer>
+</body>
+</html>

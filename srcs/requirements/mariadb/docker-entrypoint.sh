@@ -15,8 +15,6 @@ else
 	echo "[mariadb] Existing data directory found, skipping mysql_install_db."
 fi
 
-# Always run the bootstrap: it is fully idempotent and self-heals a data
-# directory left half-initialised by a previous interrupted run.
 echo "[mariadb] Ensuring database and users exist (idempotent bootstrap)"
 mysqld --user=mysql --bootstrap <<-EOF
 	USE mysql;

@@ -1,8 +1,8 @@
 # Rapport Inception — tout ce qu'il faut savoir pour défendre le projet
 
 Ce document explique l'architecture, chaque choix technique, et comment
-**t'approprier le projet** pour la soutenance. Le service custom est **Redis**
-(cache objet WordPress), construit depuis ta propre image Debian.
+**t'approprier le projet** pour la soutenance. Le service custom est **Gitea**
+(forge Git légère), construit depuis ta propre image Debian.
 
 ---
 
@@ -19,31 +19,42 @@ flowchart TB
             DB["mariadb<br/>:3306"]
             REDIS["redis<br/>:6379<br/>(cache objet)"]
             ADM["adminer<br/>:8080 (bonus)"]
+            STAT["static<br/>:80 (bonus)"]
+            FTP["ftp<br/>:21 + passive (bonus)"]
+            GIT["gitea<br/>:3000 (custom)"]
         end
 
         subgraph DATA["/home/sgil--de/data"]
             VWP[("wordpress_data<br/>/var/www/html")]
             VDB[("mariadb_data<br/>/var/lib/mysql")]
+            VGT[("gitea_data<br/>/data")]
         end
 
         SEC[/"secrets/*.txt<br/>(hors git)"/]
     end
 
     Client -- "443" --> NGINX
+    Client -- "21/30000-30009" --> FTP
     NGINX -- "fastcgi 9000" --> WP
+    NGINX -- "/static" --> STAT
+    NGINX -- "/adminer" --> ADM
+    NGINX -- "/gitea" --> GIT
     WP -- "3306" --> DB
     WP -- "6379" --> REDIS
     ADM -- "3306" --> DB
 
     WP --- VWP
+    FTP --- VWP
     NGINX -. "lecture seule" .- VWP
     DB --- VDB
+    GIT --- VGT
     SEC -. "/run/secrets" .-> DB
     SEC -. "/run/secrets" .-> WP
 ```
 
-**Idée clé** : seul `nginx` est exposé à l'extérieur (port 443). Tout le reste
-communique uniquement sur le réseau Docker interne `inception`.
+**Idée clé** : pour le web, seul `nginx` est exposé (port 443). Le bonus FTP
+ouvre aussi les ports 21 + 30000-30009. Tout le reste communique sur le réseau
+Docker interne `inception`.
 
 ---
 
@@ -99,8 +110,11 @@ et que `redis` soit démarré avant de lancer l'installation WordPress.
 | mariadb | `mariadb` | debian:12-slim | `mysqld --user=mysql` | Base de données |
 | wordpress | `wordpress` | debian:12-slim | `php-fpm8.2 -F` | WordPress + PHP |
 | nginx | `nginx` | debian:12-slim | `nginx -g 'daemon off;'` | Reverse proxy TLS |
-| redis | `redis` | debian:12-slim | `redis-server` | Cache objet (bonus/custom) |
+| redis | `redis` | debian:12-slim | `redis-server` | Cache objet (bonus) |
 | adminer | `adminer` | debian:12-slim | `php -S` | GUI base (bonus) |
+| static | `static` | debian:12-slim | `nginx -g 'daemon off;'` | Site statique (bonus) |
+| ftp | `ftp` | debian:12-slim | `vsftpd` | FTP vers volume WordPress (bonus) |
+| gitea | `gitea` | debian:12-slim | `gitea web` | Forge Git (custom) |
 
 ### mariadb
 - Init **sans serveur temporaire ni `sleep`** : utilise `mysql_install_db`
@@ -121,18 +135,31 @@ et que `redis` soit démarré avant de lancer l'installation WordPress.
 - Pas de nginx dans ce conteneur (php-fpm seul, écoute TCP 9000).
 
 ### nginx
-- **Seul** conteneur exposé, **port 443 uniquement**, `TLSv1.2`/`TLSv1.3`.
+- **Seul** point d'entrée web (port 443), `TLSv1.2`/`TLSv1.3`.
 - Certificat auto-signé généré au démarrage (`setup_ssl.sh`).
 - Le domaine est injecté dans la conf via `envsubst` (`${DOMAIN_NAME}`),
   donc 0 valeur en dur, tout vient du `.env`.
 - `entrypoint.sh` finit par `exec nginx -g 'daemon off;'` → nginx est PID 1.
 
-### redis (service custom)
-Voir section 7 dédiée.
+### redis (bonus)
+Cache objet WordPress (voir section 7 pour le service custom Gitea).
 
 ### adminer (bonus)
 Image **construite par nous** (Debian + php-cli + adminer.php servi par le
-serveur web intégré de PHP). Accessible sur `http://localhost:8080`.
+serveur web intégré de PHP). Accessible sur `https://sgil--de.42.fr/adminer/`.
+
+### static (bonus)
+Site vitrine simple (HTML/CSS) servi par un nginx dédié. Exposé via
+`https://sgil--de.42.fr/static/` (reverse proxy nginx principal).
+
+### ftp (bonus)
+Serveur `vsftpd` pointant sur le volume WordPress (`/var/www/html`). L’utilisateur
+FTP a le même UID/GID que `www-data` pour éviter les soucis de droits.
+Ports exposés : `21` + plage passive `30000-30009`.
+
+### gitea (service custom)
+Forge Git auto‑hébergée, utile pour centraliser les dépôts pendant la démo. La
+configuration est stockée dans `/home/sgil--de/data/gitea`.
 
 ---
 
@@ -140,27 +167,33 @@ serveur web intégré de PHP). Accessible sur `http://localhost:8080`.
 
 ```mermaid
 flowchart LR
-    subgraph Host
-        H1["/home/sgil--de/data/mariadb"]
-        H2["/home/sgil--de/data/wordpress"]
-        F1["secrets/db_password.txt"]
-        F2["secrets/db_root_password.txt"]
-        F3["secrets/credentials.txt"]
-    end
-    subgraph Conteneurs
-        C1["mariadb:/var/lib/mysql"]
-        C2["wordpress:/var/www/html"]
-        C3["nginx:/var/www/html (ro)"]
-        S1["/run/secrets/db_password"]
-        S2["/run/secrets/db_root_password"]
-        S3["/run/secrets/wp_credentials"]
-    end
-    H1 --- C1
-    H2 --- C2
-    H2 -. ro .- C3
-    F1 --> S1
-    F2 --> S2
-    F3 --> S3
+  subgraph Host
+    H1["/home/sgil--de/data/mariadb"]
+    H2["/home/sgil--de/data/wordpress"]
+    H3["/home/sgil--de/data/gitea"]
+    F1["secrets/db_password.txt"]
+    F2["secrets/db_root_password.txt"]
+    F3["secrets/credentials.txt"]
+    F4["secrets/ftp_password.txt"]
+  end
+  subgraph Conteneurs
+    C1["mariadb:/var/lib/mysql"]
+    C2["wordpress:/var/www/html"]
+    C3["nginx:/var/www/html (ro)"]
+    C4["gitea:/data"]
+    S1["/run/secrets/db_password"]
+    S2["/run/secrets/db_root_password"]
+    S3["/run/secrets/wp_credentials"]
+    S4["/run/secrets/ftp_password"]
+  end
+  H1 --- C1
+  H2 --- C2
+  H3 --- C4
+  H2 -. ro .- C3
+  F1 --> S1
+  F2 --> S2
+  F3 --> S3
+  F4 --> S4
 ```
 
 - **Volumes nommés bind-backed** : déclarés comme volumes Docker nommés
@@ -194,7 +227,8 @@ noms de base, logins).
 `network: host` supprimerait l'isolation réseau (le conteneur utilise la
 pile réseau de l'hôte) → **interdit** par le sujet. On crée un **réseau
 bridge dédié** (`inception`) : les conteneurs se joignent par leur **nom de
-service** (DNS interne Docker), et seul le port 443 de nginx est publié.
+service** (DNS interne Docker). Pour le web, seul le port 443 de nginx est
+publié ; le bonus FTP expose aussi 21 + 30000-30009.
 
 ### Volumes Docker vs bind mounts
 Un **bind mount** monte un chemin hôte arbitraire (fragile, dépend du
@@ -205,37 +239,24 @@ adossé à un bind contrôlé). Bind mount « brut » interdit pour ces 2 volume
 
 ---
 
-## 7. Service custom : Redis (cache objet WordPress)
+## 7. Service custom : Gitea (forge Git auto‑hébergée)
 
-**Pourquoi Redis ?** WordPress recalcule beaucoup d'objets (options,
-requêtes) à chaque page. Le *object cache* Redis garde ces résultats en
-mémoire → moins de requêtes MariaDB, pages plus rapides. C'est un service
-utile et facile à justifier en défense.
+**Pourquoi Gitea ?** C’est une forge Git légère (comparée à GitLab), parfaite
+pour démontrer un service utile en soutenance : création de dépôts, issues,
+pull requests, tout en restant simple et autonome.
 
 **Comment c'est branché :**
 
 ```mermaid
 flowchart LR
-    WP["wordpress<br/>plugin redis-cache<br/>object-cache.php"] -- "set/get :6379" --> R["redis<br/>maxmemory 64mb<br/>policy allkeys-lru"]
+    U["Navigateur"] -- "/gitea" --> N["nginx (443)"] -- "proxy" --> G["gitea (3000)"]
+    G --- V["/home/sgil--de/data/gitea"]
 ```
 
-1. Image **construite** depuis `debian:12-slim` (pas d'image DockerHub) :
-   [srcs/requirements/redis/Dockerfile](srcs/requirements/redis/Dockerfile).
-2. Config dédiée [srcs/requirements/redis/conf/redis.conf](srcs/requirements/redis/conf/redis.conf) :
-   - `save ""` + `appendonly no` → cache **volatil**, aucune persistance
-     (donc pas de volume nécessaire).
-   - `maxmemory 64mb` + `allkeys-lru` → mémoire bornée, éviction LRU.
-   - `daemonize no` → `redis-server` reste au premier plan = **PID 1**.
-3. Côté WordPress : extension PHP `php8.2-redis`, plugin `redis-cache`
-   activé, constantes `WP_REDIS_HOST=redis` / `WP_REDIS_PORT=6379` posées
-   dans `wp-config.php` par l'entrypoint, puis `wp redis enable`.
-
-**Vérifier en soutenance :**
-```bash
-docker exec -it wordpress wp redis status --allow-root
-docker exec -it redis redis-cli INFO keyspace
-docker exec -it redis redis-cli MONITOR   # voir le trafic en direct
-```
+1. Image **construite** depuis `debian:12-slim` :
+  [srcs/requirements/gitea/Dockerfile](srcs/requirements/gitea/Dockerfile).
+2. Données persistées dans un volume nommé bind-backed (`/home/sgil--de/data/gitea`).
+3. Accès via `https://sgil--de.42.fr/gitea/` grâce au reverse proxy nginx.
 
 ---
 
@@ -260,7 +281,10 @@ ajouter dans `/etc/hosts` de la VM :
 Accès :
 - Site : `https://sgil--de.42.fr` (certificat auto-signé → accepter l'alerte)
 - Admin WP : `https://sgil--de.42.fr/wp-admin` (user `sgil-de`)
-- Adminer : `http://localhost:8080` (serveur : `mariadb`)
+- Statique : `https://sgil--de.42.fr/static/`
+- Adminer : `https://sgil--de.42.fr/adminer/` (serveur : `mariadb`)
+- Gitea : `https://sgil--de.42.fr/gitea/`
+- FTP : `ftp://<ip_hote>` (user = `FTP_USER`, port 21 + 30000-30009)
 
 ---
 
@@ -276,7 +300,7 @@ Accès :
 | `.env` à la racine | `../.env` | `srcs/.env` (arbo conforme) |
 | Healthcheck nginx | `curl -f` (échoue) | `curl -fk` |
 | PID 1 nginx | `sh -c "... && nginx"` | `exec nginx` via entrypoint |
-| redis/adminer | images DockerHub | Dockerfiles maison |
+| redis/adminer/gitea/static/ftp | images DockerHub | Dockerfiles maison |
 | MariaDB init | serveur temp + `sleep` | `mysqld --bootstrap` (propre) |
 
 ---
@@ -293,7 +317,7 @@ Accès :
   montés dans `/run/secrets`. Rien en dur, rien dans `.env`.
 - **« Pourquoi deux réseaux... non, un réseau ? »** — Un seul réseau bridge
   `inception` suffit, isolation interne, résolution DNS par nom de service,
-  seul 443 publié.
+  443 publié pour le web (+ ports FTP pour le bonus).
 - **« Le volume est-il un bind mount ? »** — Non, c'est un **volume nommé**
   Docker ; `driver_opts` le fait simplement pointer vers
   `/home/sgil--de/data` comme l'exige le sujet.

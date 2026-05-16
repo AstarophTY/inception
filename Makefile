@@ -8,7 +8,7 @@ COMPOSE := cd srcs && docker compose
 all: up
 
 setup:
-	@mkdir -p $(DATA)/mariadb $(DATA)/wordpress
+	@mkdir -p $(DATA)/mariadb $(DATA)/wordpress $(DATA)/gitea
 	@echo "Host data directories ready in $(DATA)"
 
 build: setup
@@ -42,7 +42,7 @@ clean:
 
 fclean: clean
 	-docker system prune -af
-	@rm -rf $(DATA)/mariadb $(DATA)/wordpress
+	@rm -rf $(DATA)/mariadb $(DATA)/wordpress $(DATA)/gitea
 	@echo "Full clean done."
 
 re: fclean all
