@@ -11,6 +11,7 @@ services:
     secrets:
       - db_password
       - db_root_password
+      - gitea_db_password
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -104,9 +105,14 @@ services:
       - GITEA__server__SERVE_FROM_SUB_PATH=true
       - GITEA__server__PROTOCOL=http
       - GITEA__server__HTTP_PORT=3000
-      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=mariadb:3306
+      - GITEA__database__NAME=${GITEA_DB_NAME}
+      - GITEA__database__USER=${GITEA_DB_USER}
     volumes:
       - gitea_data:/data
+    secrets:
+      - gitea_db_password
     networks:
       - inception
 
@@ -157,6 +163,8 @@ secrets:
     file: ../secrets/credentials.txt
   ftp_password:
     file: ../secrets/ftp_password.txt
+  gitea_db_password:
+    file: ../secrets/gitea_db_password.txt
 
 networks:
   inception:

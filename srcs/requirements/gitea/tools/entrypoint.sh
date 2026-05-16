@@ -7,6 +7,10 @@ ROOT_URL="${GITEA__server__ROOT_URL:-}"
 SERVE_FROM_SUB_PATH="${GITEA__server__SERVE_FROM_SUB_PATH:-}"
 DB_TYPE="${GITEA__database__DB_TYPE:-}"
 DB_PATH="${GITEA__database__PATH:-}"
+DB_HOST="${GITEA__database__HOST:-}"
+DB_NAME="${GITEA__database__NAME:-}"
+DB_USER="${GITEA__database__USER:-}"
+DB_PASSWD="${GITEA__database__PASSWD:-}"
 
 if [ -z "${ROOT_URL}" ] && [ -n "${DOMAIN_NAME}" ]; then
 	ROOT_URL="https://${DOMAIN_NAME}/gitea/"
@@ -49,6 +53,26 @@ fi
 
 if [ -n "${DB_TYPE}" ]; then
 	set_ini_value "database" "DB_TYPE" "${DB_TYPE}"
+fi
+
+if [ -f /run/secrets/gitea_db_password ]; then
+	DB_PASSWD="$(cat /run/secrets/gitea_db_password)"
+fi
+
+if [ -n "${DB_HOST}" ]; then
+	set_ini_value "database" "HOST" "${DB_HOST}"
+fi
+
+if [ -n "${DB_NAME}" ]; then
+	set_ini_value "database" "NAME" "${DB_NAME}"
+fi
+
+if [ -n "${DB_USER}" ]; then
+	set_ini_value "database" "USER" "${DB_USER}"
+fi
+
+if [ -n "${DB_PASSWD}" ]; then
+	set_ini_value "database" "PASSWD" "${DB_PASSWD}"
 fi
 
 if [ -z "${DB_PATH}" ] && [ "${DB_TYPE}" = "sqlite3" ]; then

@@ -20,7 +20,9 @@ if ! getent group www-data >/dev/null 2>&1; then
 fi
 
 if ! id "${FTP_USER}" >/dev/null 2>&1; then
-	useradd -o -u 33 -g www-data -d /var/www/html -s /usr/sbin/nologin "${FTP_USER}"
+	useradd -o -u 33 -g www-data -d /var/www/html -s /bin/bash "${FTP_USER}"
+else
+	usermod -s /bin/bash "${FTP_USER}"
 fi
 
 echo "${FTP_USER}:${FTP_PASSWORD}" | chpasswd
