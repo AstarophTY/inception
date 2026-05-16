@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /var/www && \
-    curl -fsSL https://www.adminer.org/latest.php -o /var/www/adminer.php
+    curl -fsSL https://www.adminer.org/latest.php -o /var/www/index.php
 
 WORKDIR /var/www
 
 EXPOSE 8080
 
-CMD ["php", "-S", "0.0.0.0:8080", "adminer.php"]
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www"]

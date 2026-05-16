@@ -3,36 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inception — Site statique</title>
+  <title>INCEPTION — Spider-Verse Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Russo+One&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="halftone"></div>
+  <div class="webbing"></div>
+
   <header class="hero">
     <nav class="nav">
-      <div class="brand">Inception</div>
+      <div class="brand">
+        <span class="spider">🕷</span> INCEPTION
+      </div>
       <div class="nav-links">
+        <a href="#about">Le projet</a>
         <a href="#features">Bonus</a>
         <a href="#stack">Stack</a>
         <a href="#access">Accès</a>
       </div>
     </nav>
+
     <div class="hero-content">
-      <h1>Site statique /static</h1>
-      <p class="subtitle">Une vitrine minimaliste pour présenter l’architecture et les bonus du projet.</p>
+      <p class="kicker">// Miles Morales · Spider-Verse Edition</p>
+      <h1 class="glitch" data-text="INCEPTION">INCEPTION</h1>
+      <p class="subtitle">
+        Une infrastructure web complète, conteneurisée avec Docker.
+        « Anyone can wear the mask » — ici, chaque service a la sienne.
+      </p>
       <div class="cta">
-        <a class="btn" href="#access">Comment accéder</a>
-        <a class="btn secondary" href="#stack">Voir la stack</a>
+        <a class="btn" href="#about">C'est quoi le projet ?</a>
+        <a class="btn secondary" href="#access">Accéder aux services</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section id="features" class="section">
-      <h2>Bonus livrés</h2>
+    <section id="about" class="section">
+      <h2><span class="tag">01</span> Le projet en 30 secondes</h2>
+      <div class="panel">
+        <p>
+          <strong>Inception</strong> consiste à bâtir une petite infrastructure de
+          services à la main, chacun isolé dans son <strong>conteneur Docker</strong>,
+          le tout orchestré avec <strong>Docker Compose</strong>.
+        </p>
+        <p>
+          Un reverse proxy <strong>NGINX</strong> en TLS sert un site
+          <strong>WordPress</strong> branché sur une base <strong>MariaDB</strong>.
+          Autour gravitent des services bonus. Comme dans le Spider-Verse :
+          plusieurs entités, un seul univers cohérent. 🕸️
+        </p>
+      </div>
+    </section>
+
+    <section id="features" class="section alt">
+      <h2><span class="tag">02</span> Bonus livrés</h2>
       <div class="grid">
         <article class="card">
           <h3>Redis cache</h3>
-          <p>Object cache WordPress pour réduire la charge MariaDB.</p>
+          <p>Object cache WordPress pour soulager MariaDB. Rapide comme Miles en chute libre.</p>
         </article>
         <article class="card">
           <h3>FTP sécurisé</h3>
@@ -40,43 +71,53 @@
         </article>
         <article class="card">
           <h3>Adminer</h3>
-          <p>Interface simple pour inspecter la base MariaDB.</p>
+          <p>Interface web pour inspecter et piloter la base MariaDB.</p>
         </article>
         <article class="card">
           <h3>Gitea</h3>
-          <p>Forge Git auto‑hébergée, pratique pour la démo.</p>
+          <p>Forge Git auto-hébergée, idéale pour la démo et le versioning.</p>
+        </article>
+        <article class="card">
+          <h3>Site statique</h3>
+          <p>Cette page : une vitrine légère servie par son propre conteneur.</p>
+        </article>
+        <article class="card">
+          <h3>Docker Compose</h3>
+          <p>Réseau dédié, volumes persistants, redémarrage automatique.</p>
         </article>
       </div>
     </section>
 
-    <section id="stack" class="section alt">
-      <h2>Stack technique</h2>
+    <section id="stack" class="section">
+      <h2><span class="tag">03</span> Stack technique</h2>
       <div class="stack">
-        <div class="pill">nginx + TLS 1.2/1.3</div>
-        <div class="pill">WordPress + PHP‑FPM</div>
+        <div class="pill">NGINX · TLS 1.2/1.3</div>
+        <div class="pill">WordPress · PHP-FPM</div>
         <div class="pill">MariaDB</div>
-        <div class="pill">Redis cache</div>
+        <div class="pill">Redis</div>
         <div class="pill">FTP (vsftpd)</div>
         <div class="pill">Gitea</div>
+        <div class="pill">Adminer</div>
+        <div class="pill">Debian · Docker</div>
       </div>
     </section>
 
-    <section id="access" class="section">
-      <h2>Accès rapide</h2>
+    <section id="access" class="section alt">
+      <h2><span class="tag">04</span> Accès rapide</h2>
       <div class="access">
-        <div>
+        <div class="access-card">
           <h4>Site WordPress</h4>
           <p><code>https://sgil--de.42.fr</code></p>
         </div>
-        <div>
+        <div class="access-card">
           <h4>Site statique</h4>
           <p><code>https://sgil--de.42.fr/static/</code></p>
         </div>
-        <div>
+        <div class="access-card">
           <h4>Adminer</h4>
           <p><code>https://sgil--de.42.fr/adminer/</code></p>
         </div>
-        <div>
+        <div class="access-card">
           <h4>Gitea</h4>
           <p><code>https://sgil--de.42.fr/gitea/</code></p>
         </div>
@@ -85,7 +126,8 @@
   </main>
 
   <footer class="footer">
-    <p>Inception • Bonus • 42 Lyon</p>
+    <p class="footer-quote">« What's up, danger? »</p>
+    <p>INCEPTION · Bonus · 42 Lyon — <span class="spider">🕷</span></p>
   </footer>
 </body>
 </html>
