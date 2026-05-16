@@ -13,8 +13,8 @@ STATE="Auvergne-Rhône-Alpes"
 CITY="Lyon"
 ORG="MyCompany"
 ORG_UNIT="IT"
-COMMON_NAME="localhost"
-EMAIL="admin@example.com"
+COMMON_NAME="${DOMAIN_NAME:-localhost}"
+EMAIL="webmaster@${DOMAIN_NAME:-localhost}"
 
 if [ -f "$KEY_FILE" ] && [ -f "$CERT_FILE" ]; then
   echo "Existing TLS files found in $OUTPUT_DIR — leaving in place."

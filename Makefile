@@ -1,23 +1,48 @@
-COMPOSE_DIR=srcs
+NAME    := inception
+LOGIN   := sgil--de
+DATA    := /home/$(LOGIN)/data
+COMPOSE := cd srcs && docker compose
 
-.PHONY: build up down logs clean
+.PHONY: all setup build up down stop start restart logs ps clean fclean re
 
-build:
-	@echo "Building all images..."
-	cd $(COMPOSE_DIR) && docker compose build --parallel
+all: up
 
-up:
-	@echo "Starting stack (detached)..."
-	cd $(COMPOSE_DIR) && docker compose up -d
+setup:
+	@mkdir -p $(DATA)/mariadb $(DATA)/wordpress
+	@echo "Host data directories ready in $(DATA)"
+
+build: setup
+	@echo "Building images..."
+	$(COMPOSE) build
+
+up: build
+	@echo "Starting $(NAME)..."
+	$(COMPOSE) up -d
 
 down:
-	@echo "Stopping stack..."
-	cd $(COMPOSE_DIR) && docker compose down
+	$(COMPOSE) down
+
+stop:
+	$(COMPOSE) stop
+
+start:
+	$(COMPOSE) start
+
+restart:
+	$(COMPOSE) restart
 
 logs:
-	cd $(COMPOSE_DIR) && docker compose logs -f
+	$(COMPOSE) logs -f
+
+ps:
+	$(COMPOSE) ps
 
 clean:
-	@echo "Removing volumes (data persistence will be deleted).";
-	cd $(COMPOSE_DIR) && docker compose down -v --remove-orphans
+	$(COMPOSE) down -v --remove-orphans
 
+fclean: clean
+	-docker system prune -af
+	@rm -rf $(DATA)/mariadb $(DATA)/wordpress
+	@echo "Full clean done."
+
+re: fclean all

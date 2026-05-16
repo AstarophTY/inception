@@ -3,41 +3,30 @@ set -e
 
 DBDIR=/var/lib/mysql
 
-if [ -z "$(ls -A $DBDIR 2>/dev/null)" ]; then
-  echo "[entrypoint] Initialising MariaDB data directory"
-  mysqld --initialize-insecure --datadir=$DBDIR --user=mysql
-  chown -R mysql:mysql $DBDIR
+chown -R mysql:mysql "$DBDIR" /var/run/mysqld
 
-  # Start temporary server
-  mysqld_safe --datadir=$DBDIR &
-  pid="$!"
-  sleep 2
+ROOT_PW="$(cat /run/secrets/db_root_password)"
+USER_PW="$(cat /run/secrets/db_password)"
 
-  # Read secrets or env fallback
-  if [ -f /run/secrets/db_root_password ]; then
-    ROOT_PW=$(cat /run/secrets/db_root_password)
-  else
-    ROOT_PW=${MYSQL_ROOT_PASSWORD:-root}
-  fi
-  if [ -f /run/secrets/db_password ]; then
-    USER_PW=$(cat /run/secrets/db_password)
-  else
-    USER_PW=${MYSQL_PASSWORD:-password}
-  fi
+if [ ! -d "$DBDIR/mysql" ]; then
+	echo "[mariadb] Initialising data directory"
+	mysql_install_db --datadir="$DBDIR" --user=mysql --skip-test-db >/dev/null
 
-  # Wait for server to be ready
-  for i in {1..30}; do
-    mysqladmin ping >/dev/null 2>&1 && break || sleep 1
-  done
-
-  mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PW}';" || true
-  mysql -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};" || true
-  mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${USER_PW}';" || true
-  mysql -e "GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%'; FLUSH PRIVILEGES;" || true
-
-  echo "[entrypoint] Stopping temporary server"
-  mysqladmin shutdown || true
-  wait $pid || true
+	echo "[mariadb] Bootstrapping database and users"
+	mysqld --user=mysql --bootstrap <<-EOF
+		USE mysql;
+		FLUSH PRIVILEGES;
+		ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PW}';
+		DELETE FROM mysql.user WHERE User='';
+		DROP DATABASE IF EXISTS test;
+		CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
+		CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${USER_PW}';
+		GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
+		FLUSH PRIVILEGES;
+	EOF
+else
+	echo "[mariadb] Existing data directory found, skipping init."
 fi
 
-exec mysqld
+echo "[mariadb] Starting mysqld (foreground, PID 1, user=mysql)"
+exec mysqld --user=mysql --bind-address=0.0.0.0

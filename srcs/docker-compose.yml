@@ -1,12 +1,11 @@
 services:
   mariadb:
     build: ./requirements/mariadb
-    image: inception_mariadb:1.0.0
+    image: mariadb
+    container_name: mariadb
     restart: unless-stopped
-    env_file: ../.env
+    env_file: .env
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
     secrets:
@@ -15,7 +14,7 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
-      - backend
+      - inception
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -24,75 +23,87 @@ services:
 
   wordpress:
     build: ./requirements/wordpress
-    image: inception_wordpress:1.0.0
+    image: wordpress
+    container_name: wordpress
     restart: unless-stopped
-    env_file: ../.env
+    env_file: .env
     environment:
       - WORDPRESS_DB_HOST=mariadb:3306
-      - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
-      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
     secrets:
       - db_password
+      - wp_credentials
     volumes:
       - wordpress_data:/var/www/html
     depends_on:
       mariadb:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
-      - backend
+      - inception
 
   nginx:
     build: ./requirements/nginx
-    image: inception_nginx:1.0.0
+    image: nginx
+    container_name: nginx
     restart: unless-stopped
+    env_file: .env
     ports:
       - "443:443"
     depends_on:
       - wordpress
     volumes:
       - wordpress_data:/var/www/html:ro
-      - nginx_ssl:/etc/nginx/ssl
     networks:
-      - frontend
-      - backend
+      - inception
     healthcheck:
-      test: ["CMD", "curl", "-f", "https://localhost/"]
+      test: ["CMD", "curl", "-fk", "https://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   redis:
-    image: redis:7.2-alpine
+    build: ./requirements/redis
+    image: redis
+    container_name: redis
     restart: unless-stopped
-    command: ["redis-server", "--save", ""]
-    volumes:
-      - redis_data:/data
     networks:
-      - backend
+      - inception
 
   adminer:
-    image: adminer:4.8.1
+    build: ./requirements/adminer
+    image: adminer
+    container_name: adminer
     restart: unless-stopped
     ports:
       - "8080:8080"
+    depends_on:
+      - mariadb
     networks:
-      - backend
+      - inception
 
 volumes:
   mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/sgil--de/data/mariadb
   wordpress_data:
-  redis_data:
-  nginx_ssl:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/sgil--de/data/wordpress
 
 secrets:
   db_password:
     file: ../secrets/db_password.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
+  wp_credentials:
+    file: ../secrets/credentials.txt
 
 networks:
-  frontend:
-    driver: bridge
-  backend:
+  inception:
     driver: bridge
