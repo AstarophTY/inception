@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-/usr/local/bin/setup_ssl.sh
+# /usr/local/bin/setup_ssl.sh
 
 envsubst '${DOMAIN_NAME}' \
 	< /etc/nginx/conf.d/default.conf.template \
