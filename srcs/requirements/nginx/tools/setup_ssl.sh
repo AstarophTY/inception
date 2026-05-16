@@ -16,12 +16,8 @@ ORG_UNIT="IT"
 COMMON_NAME="${DOMAIN_NAME:-localhost}"
 EMAIL="webmaster@${DOMAIN_NAME:-localhost}"
 
-if [ -f "$KEY_FILE" ] && [ -f "$CERT_FILE" ]; then
-  echo "Existing TLS files found in $OUTPUT_DIR — leaving in place."
-  exit 0
-fi
-
 echo "Generating self-signed TLS certificate in $OUTPUT_DIR (for local/testing only)."
+rm -f "$KEY_FILE" "$CERT_FILE"
 umask 077
 openssl genrsa -out "$KEY_FILE" 2048
 
