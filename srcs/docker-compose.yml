@@ -113,6 +113,9 @@ services:
       - gitea_data:/data
     secrets:
       - gitea_db_password
+    depends_on:
+      mariadb:
+        condition: service_healthy
     networks:
       - inception
 

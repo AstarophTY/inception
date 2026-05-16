@@ -59,6 +59,10 @@ if [ -f /run/secrets/gitea_db_password ]; then
 	DB_PASSWD="$(cat /run/secrets/gitea_db_password)"
 fi
 
+if [ -z "${DB_HOST}" ] && [ "${DB_TYPE}" = "mysql" ]; then
+	DB_HOST="mariadb:3306"
+fi
+
 if [ -n "${DB_HOST}" ]; then
 	set_ini_value "database" "HOST" "${DB_HOST}"
 fi
