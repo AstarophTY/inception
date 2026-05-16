@@ -38,6 +38,24 @@ make re         # fclean + rebuild
 `srcs/docker-compose.yml`). Each service builds its own Dockerfile under
 `srcs/requirements/<service>/`. Images are named exactly like their service.
 
+### Build/run flow (Mermaid)
+
+```mermaid
+flowchart TD
+  make["make"] --> setup["setup: create host dirs"]
+  setup --> build["docker compose build"]
+  build --> up["docker compose up -d"]
+  up --> containers["containers running"]
+  containers --> nginx["nginx (TLS entrypoint)"]
+  containers --> wp["wordpress"]
+  containers --> db["mariadb"]
+  containers --> gitea["gitea"]
+  containers --> adminer["adminer"]
+  containers --> redis["redis"]
+  containers --> static["static"]
+  containers --> ftp["ftp"]
+```
+
 ## Manage containers and volumes
 
 ```bash
@@ -54,6 +72,8 @@ make clean                      # remove containers + volumes
   (mounted at `/var/www/html`).
 - `mariadb_data` → host `/home/sgil--de/data/mariadb`
   (mounted at `/var/lib/mysql`).
+- `nginx_ssl` → host `/home/sgil--de/data/nginx_ssl`
+  (mounted at `/etc/nginx/ssl`, stores local CA + server cert).
 
 Both are **named volumes** declared with `driver_opts` (`type=none`,
 `o=bind`) so Docker manages them while the bytes physically live under

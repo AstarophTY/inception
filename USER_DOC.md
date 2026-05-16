@@ -8,7 +8,38 @@
 | wordpress | The website + admin panel | https://sgil--de.42.fr/wp-admin |
 | mariadb | Database (internal only) | — |
 | redis | Object cache (internal only) | — |
-| adminer | Database web GUI (bonus) | http://localhost:8080 |
+| adminer | Database web GUI (bonus) | https://sgil--de.42.fr/adminer/ |
+| gitea | Git forge (bonus) | https://sgil--de.42.fr/gitea/ |
+| static | Simple static page (bonus) | https://sgil--de.42.fr/static/ |
+
+## Request flow (Mermaid)
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant N as NGINX
+  participant W as WordPress
+  participant M as MariaDB
+  participant R as Redis
+  participant G as Gitea
+  participant A as Adminer
+  participant S as Static
+
+  U->>N: HTTPS request
+  N->>W: / or /wp-admin
+  W->>M: SQL queries
+  W->>R: Object cache
+
+  U->>N: /gitea/
+  N->>G: Proxy to Gitea
+  G->>M: SQL queries
+
+  U->>N: /adminer/
+  N->>A: Proxy to Adminer
+
+  U->>N: /static/
+  N->>S: Serve static site
+```
 
 ## Start and stop the project
 
@@ -45,6 +76,11 @@ under `secrets/` (git-ignored), injected into containers at `/run/secrets`:
 | `secrets/credentials.txt` | `WP_ADMIN_PASSWORD=` / `WP_USER_PASSWORD=` |
 
 To change a password: edit the file, then `make re` (rebuild from scratch).
+
+## Trust the local TLS certificate (optional but recommended)
+
+If you want Git/clients to trust HTTPS without warnings, install the local CA
+created by NGINX. The CA is persisted in the `nginx_ssl` volume.
 
 ## Check that the services are running correctly
 

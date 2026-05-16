@@ -11,6 +11,20 @@ cache, **Adminer**). Every image is built from scratch from the penultimate
 stable Debian, orchestrated with Docker Compose and a Makefile. NGINX is the
 only entrypoint, exposed on port 443 with TLSv1.2/TLSv1.3 only.
 
+## Architecture (Mermaid)
+
+```mermaid
+flowchart LR
+  user["User / Browser"] -->|"HTTPS 443"| nginx["NGINX (reverse proxy)"]
+  nginx --> wp["WordPress (php-fpm)"]
+  wp --> db[("MariaDB")]
+  wp --> redis[("Redis")]
+  nginx --> gitea["Gitea"]
+  gitea --> db
+  nginx --> adminer["Adminer"]
+  nginx --> static["Static site"]
+```
+
 ## Instructions
 
 Prerequisites: Docker Engine + Docker Compose, run inside a Virtual Machine.
@@ -52,6 +66,8 @@ Docker is used to run each service in its **own container** from a
 `docker compose` which builds the Dockerfiles in `srcs/requirements/*`.
 Persistent data lives in named volumes backed by `/home/sgil--de/data`.
 Passwords are provided as Docker secrets; non-sensitive values via `.env`.
+NGINX TLS assets are stored in a dedicated volume (`nginx_ssl`) so the local
+CA and server certificate survive container restarts.
 
 Main design choices and comparisons:
 
