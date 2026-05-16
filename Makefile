@@ -8,7 +8,7 @@ COMPOSE := cd srcs && docker compose
 all: up
 
 setup:
-	@mkdir -p $(DATA)/mariadb $(DATA)/wordpress $(DATA)/gitea
+	@mkdir -p $(DATA)/mariadb $(DATA)/wordpress $(DATA)/gitea $(DATA)/nginx_ssl
 	@echo "Host data directories ready in $(DATA)"
 
 build: setup

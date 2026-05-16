@@ -57,6 +57,7 @@ services:
       - gitea
     volumes:
       - wordpress_data:/var/www/html:ro
+      - nginx_ssl:/etc/nginx/ssl
     networks:
       - inception
     healthcheck:
@@ -156,6 +157,12 @@ volumes:
       type: none
       o: bind
       device: /home/sgil--de/data/gitea
+  nginx_ssl:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/sgil--de/data/nginx_ssl
 
 secrets:
   db_password:
