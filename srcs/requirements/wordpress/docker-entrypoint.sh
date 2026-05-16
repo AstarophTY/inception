@@ -48,7 +48,11 @@ if [ ! -f wp-config.php ]; then
 	$WP plugin install redis-cache --activate
 	$WP redis enable || true
 else
-	echo "[wordpress] Existing installation found, skipping setup."
+	echo "[wordpress] Existing installation found, refreshing DB config."
+	$WP config set DB_NAME "${MYSQL_DATABASE}" --type=constant
+	$WP config set DB_USER "${MYSQL_USER}" --type=constant
+	$WP config set DB_PASSWORD "${DB_PASSWORD}" --type=constant
+	$WP config set DB_HOST "${WORDPRESS_DB_HOST}" --type=constant
 fi
 
 chown -R www-data:www-data /var/www/html
