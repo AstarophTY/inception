@@ -4,12 +4,24 @@
 
 ## Description
 
-Inception is a system administration project. It builds a small Docker
-infrastructure made of dedicated containers — **NGINX** (TLS reverse proxy),
-**WordPress + php-fpm**, **MariaDB** — plus bonus services (**Redis** object
-cache, **Adminer**). Every image is built from scratch from the penultimate
-stable Debian, orchestrated with Docker Compose and a Makefile. NGINX is the
-only entrypoint, exposed on port 443 with TLSv1.2/TLSv1.3 only.
+Inception is a system administration project: a complete web infrastructure made of **8 containers**, each
+built from scratch on the penultimate stable Debian (no ready-made images), orchestrated with Docker Compose and a
+Makefile. NGINX is the only web entrypoint, on port 443 with TLSv1.2/TLSv1.3 only.
+
+| Service | Role | Part |
+| --- | --- | --- |
+| **NGINX** | TLS reverse proxy, single HTTPS entrypoint | Mandatory |
+| **WordPress + php-fpm** | Website, installed and configured automatically with WP-CLI | Mandatory |
+| **MariaDB** | Database, bootstrapped on first start, with a healthcheck | Mandatory |
+| **Redis** | Object cache for WordPress | Bonus |
+| **FTP (vsftpd)** | Access to the WordPress files | Bonus |
+| **Adminer** | Database web GUI (`/adminer/`) | Bonus |
+| **Gitea** | Self-hosted Git forge (`/gitea/`) sharing MariaDB | Bonus |
+| **Static site** | Simple static page (`/static/`) | Bonus |
+
+Highlights: passwords handled as **Docker secrets** (never in the image or in git), healthchecks and
+`depends_on` conditions for a correct startup order, persistent named volumes, and a local CA whose certificates
+survive restarts.
 
 ## Architecture (Mermaid)
 
@@ -23,6 +35,9 @@ flowchart LR
   gitea --> db
   nginx --> adminer["Adminer"]
   nginx --> static["Static site"]
+  ftpuser["FTP client"] -->|"21 + passive ports"| ftp["vsftpd"]
+  ftp --> wpvol[("WordPress volume")]
+  wp --> wpvol
 ```
 
 ## Instructions
@@ -31,12 +46,15 @@ Prerequisites: Docker Engine + Docker Compose, run inside a Virtual Machine.
 
 ```bash
 # 1. Copy and adapt the environment file
-cp .env.example srcs/.env
+cp srcs/.env.example srcs/.env
 
-# 2. Map the domain to localhost (on the VM)
+# 2. Create the secrets and replace every PUT_MDP_HERE with a password
+cp -r secrets_examples secrets
+
+# 3. Map the domain to localhost (on the VM)
 echo "127.0.0.1 sgil--de.42.fr" | sudo tee -a /etc/hosts
 
-# 3. Build and start everything
+# 4. Build and start everything
 make
 ```
 
@@ -81,7 +99,8 @@ Main design choices and comparisons:
   the `.env` holds non-sensitive config.
 - **Docker Network vs Host Network** — `network: host` removes network
   isolation and is forbidden. A dedicated bridge network (`inception`) lets
-  containers reach each other by service name; only port 443 is published.
+  containers reach each other by service name; the only published ports are
+  443 (HTTPS) and the FTP bonus ports.
 - **Docker Volumes vs Bind Mounts** — A raw bind mount is fragile and
   forbidden for the two required volumes. Named volumes are managed by
   Docker; here `driver_opts` makes them store data under
